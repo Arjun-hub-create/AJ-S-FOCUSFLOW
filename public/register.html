@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - AJ'S FOCUSFLOW</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div id="particles-js"></div>
+
+    <div class="container">
+        <div class="form-box">
+            <h2>AJ'S FOCUSFLOW</h2>
+            <p>Create Account</p>
+
+            <form id="registerForm">
+                <div class="input-group">
+                    <input type="text" id="name" required class="input-field">
+                    <label for="name">Full Name</label>
+                    <div class="glow-line"></div>
+                </div>
+
+                <div class="input-group">
+                    <input type="email" id="email" required class="input-field">
+                    <label for="email">Email</label>
+                    <div class="glow-line"></div>
+                </div>
+
+                <div class="input-group">
+                    <input type="password" id="password" required class="input-field">
+                    <label for="password">Password</label>
+                    <div class="glow-line"></div>
+                </div>
+
+                <div class="input-group">
+                    <input type="password" id="confirmPassword" required class="input-field">
+                    <label for="confirmPassword">Confirm Password</label>
+                    <div class="glow-line"></div>
+                </div>
+
+                <button type="submit" class="login-btn">
+                    <span>CREATE ACCOUNT</span>
+                    <div class="btn-glow"></div>
+                </button>
+
+                <div class="signup-link">
+                    Already have an account? <a href="/">Sign In</a>
+                </div>
+            </form>
+
+            <div id="message" class="message"></div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+    <script src="js/particles-config.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/register.js"></script>
+</body>
+</html>

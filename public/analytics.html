@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analytics - AJ'S FOCUSFLOW</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="dashboard-body">
+    <div id="particles-js"></div>
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <h1 class="logo">AJ'S FOCUSFLOW</h1>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="/dashboard" class="nav-item">
+                <i class="fas fa-home"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="/projects" class="nav-item">
+                <i class="fas fa-folder"></i>
+                <span>Projects</span>
+            </a>
+            <a href="/dashboard#tasks" class="nav-item">
+                <i class="fas fa-tasks"></i>
+                <span>My Tasks</span>
+            </a>
+            <a href="/analytics" class="nav-item active">
+                <i class="fas fa-chart-line"></i>
+                <span>Analytics</span>
+            </a>
+            <a href="#" class="nav-item" id="logoutBtn">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </a>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <header class="topbar">
+            <div class="topbar-left">
+                <h2>Analytics</h2>
+            </div>
+            <div class="topbar-right">
+                <div class="user-profile">
+                    <img src="" alt="User" id="userAvatar" class="user-avatar">
+                    <span id="userName">User</span>
+                </div>
+            </div>
+        </header>
+
+        <div class="dashboard-container">
+            <!-- Overview Stats -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: rgba(0, 212, 255, 0.2);">
+                        <i class="fas fa-tasks"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="analyticsTotalTasks">0</h3>
+                        <p>Total Tasks</p>
+                        <small id="completionRate" class="stat-detail">0% Complete</small>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: rgba(0, 255, 136, 0.2);">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="analyticsCompletedTasks">0</h3>
+                        <p>Completed Tasks</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: rgba(255, 193, 7, 0.2);">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="analyticsTotalHours">0h</h3>
+                        <p>Total Hours</p>
+                        <small id="avgHours" class="stat-detail">0h avg per task</small>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: rgba(255, 87, 87, 0.2);">
+                        <i class="fas fa-spinner"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="analyticsInProgress">0</h3>
+                        <p>In Progress</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Section -->
+            <div class="analytics-grid">
+                <div class="chart-card">
+                    <h4>Task Distribution</h4>
+                    <canvas id="taskDistributionChart"></canvas>
+                </div>
+                <div class="chart-card">
+                    <h4>Priority Breakdown</h4>
+                    <canvas id="priorityChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Recent Activity -->
+            <div class="section">
+                <div class="section-header">
+                    <h3>Time Entries</h3>
+                </div>
+                <div id="timeEntriesList" class="time-entries-list">
+                    <!-- Time entries will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="js/particles-config.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/analytics.js"></script>
+</body>
+</html>

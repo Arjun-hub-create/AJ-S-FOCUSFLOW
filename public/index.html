@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - AJ'S FOCUSFLOW</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div id="particles-js"></div>
+
+    <div class="container">
+        <div class="form-box">
+            <h2>AJ'S FOCUSFLOW</h2>
+            <p>Welcome Back</p>
+
+            <form id="loginForm">
+                <div class="input-group">
+                    <input type="email" id="email" required class="input-field">
+                    <label for="email">Email</label>
+                    <div class="glow-line"></div>
+                </div>
+
+                <div class="input-group">
+                    <input type="password" id="password" required class="input-field">
+                    <label for="password">Password</label>
+                    <div class="glow-line"></div>
+                </div>
+
+                <div class="remember-forgot">
+                    <div class="remember">
+                        <input type="checkbox" id="remember">
+                        <label for="remember">Remember me</label>
+                    </div>
+                    <a href="#" class="forgot" id="forgotPasswordLink">Forgot Password?</a>
+                </div>
+
+                <button type="submit" class="login-btn">
+                    <span>SIGN IN</span>
+                    <div class="btn-glow"></div>
+                </button>
+
+                <div class="signup-link">
+                    Don't have an account? <a href="/register">Register</a>
+                </div>
+            </form>
+
+            <div id="message" class="message"></div>
+        </div>
+
+        <!-- Forgot Password Form -->
+        <div class="form-box" id="forgotPasswordBox" style="display: none;">
+            <h2>Reset Password</h2>
+            <p>Enter your email to receive reset instructions</p>
+
+            <form id="forgotPasswordForm">
+                <div class="input-group">
+                    <input type="email" id="resetEmail" required class="input-field">
+                    <label for="resetEmail">Email Address</label>
+                    <div class="glow-line"></div>
+                </div>
+
+                <button type="submit" class="login-btn">
+                    <span>SEND RESET LINK</span>
+                    <div class="btn-glow"></div>
+                </button>
+
+                <div class="signup-link">
+                    <a href="#" id="backToLogin">Back to Login</a>
+                </div>
+            </form>
+
+            <div id="resetMessage" class="message"></div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+    <script src="https://cdn.socket.io/4.6.0/socket.io.min.js"></script>
+    <script src="js/particles-config.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+</body>
+</html>
