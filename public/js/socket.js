@@ -2,7 +2,10 @@
 let socket;
 
 function initializeSocket() {
-    socket = io('http://localhost:5000');
+    const socketURL = window.location.hostname === 'localhost' 
+        ? 'http://localhost:5000' 
+        : window.location.origin;
+    socket = io(socketURL);
 
     const user = JSON.parse(localStorage.getItem('user'));
     if (user) {
