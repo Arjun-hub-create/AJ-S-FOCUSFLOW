@@ -174,6 +174,9 @@ function displayTasks(tasks) {
                 ${task.dueDate ? `<span style="color: rgba(0, 212, 255, 0.6); font-size: 12px;">
                     <i class="fas fa-clock"></i> ${new Date(task.dueDate).toLocaleDateString()}
                 </span>` : ''}
+                <button class="task-delete-btn" onclick="deleteTask('${task._id}')" title="Delete task">
+                    <i class="fas fa-trash"></i>
+                </button>
             </div>
         </div>
     `).join('');
@@ -194,6 +197,23 @@ async function toggleTaskStatus(taskId, currentStatus) {
         await loadDashboardData();
     } catch (error) {
         console.error('Error updating task:', error);
+    }
+}
+
+async function deleteTask(taskId) {
+    if (!confirm('Are you sure you want to delete this task?')) {
+        return;
+    }
+    
+    try {
+        const result = await api.deleteTask(taskId);
+        if (result.success) {
+            showMessage('Task deleted successfully', 'success');
+            await loadDashboardData();
+        }
+    } catch (error) {
+        console.error('Error deleting task:', error);
+        showMessage('Failed to delete task', 'error');
     }
 }
 
