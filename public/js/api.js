@@ -1,7 +1,6 @@
 // API Client for FocusFlow
-const API_BASE_URL = window.location.hostname === 'localhost' 
-    ? 'http://localhost:3000/api' 
-    : `${window.location.origin}/api`;
+// Always call the API on the same origin/port serving the frontend.
+const API_BASE_URL = `${window.location.origin}/api`;
 
 class API {
     constructor() {

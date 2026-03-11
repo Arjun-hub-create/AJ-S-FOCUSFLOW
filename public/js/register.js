@@ -11,9 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     registerForm.addEventListener('submit', async (e) => {
         e.preventDefault();
-        
-        alert('Register button clicked!');
-        
+
         const name = document.getElementById('name').value;
         const email = document.getElementById('email').value;
         const password = document.getElementById('password').value;

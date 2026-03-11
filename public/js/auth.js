@@ -69,9 +69,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (loginForm) {
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            
-            alert('Login button clicked!');
-            
+
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
 
