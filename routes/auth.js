@@ -1,10 +1,22 @@
 const express = require('express');
 const router = express.Router();
 const { body } = require('express-validator');
+const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const { validate } = require('../middleware/validator');
 const { protect } = require('../middleware/auth');
+
+function ensureDbConnected(req, res) {
+  if (mongoose.connection.readyState !== 1) {
+    res.status(503).json({
+      success: false,
+      message: 'Database not connected. Please check MONGODB_URI on the server.'
+    });
+    return false;
+  }
+  return true;
+}
 
 // Generate JWT Token
 const generateToken = (id) => {
@@ -29,6 +41,7 @@ router.post('/register', [
   body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters')
 ], validate, async (req, res) => {
   try {
+    if (!ensureDbConnected(req, res)) return;
     const { name, email, password } = req.body;
 
     // Check if user exists
@@ -85,6 +98,7 @@ router.post('/login', [
   body('password').notEmpty().withMessage('Password is required')
 ], validate, async (req, res) => {
   try {
+    if (!ensureDbConnected(req, res)) return;
     const { email, password } = req.body;
 
     // Check if user exists
