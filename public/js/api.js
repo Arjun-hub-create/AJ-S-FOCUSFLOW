@@ -8,6 +8,16 @@ class API {
         this.refreshToken = localStorage.getItem('refreshToken');
     }
 
+    // Clear local auth state without calling the API (safe fallback on auth errors)
+    localLogout(redirectTo = '/') {
+        this.token = null;
+        this.refreshToken = null;
+        localStorage.removeItem('token');
+        localStorage.removeItem('refreshToken');
+        localStorage.removeItem('user');
+        window.location.href = redirectTo;
+    }
+
     // Set authorization headers
     getHeaders() {
         const headers = {
@@ -25,8 +35,9 @@ class API {
             // Token expired, try to refresh
             const refreshed = await this.refreshAccessToken();
             if (!refreshed) {
-                this.logout();
-                return null;
+                // Avoid calling /auth/logout here (can loop on 401). Just clear local state.
+                this.localLogout('/');
+                throw new Error('Session expired. Please sign in again.');
             }
         }
 
@@ -116,11 +127,12 @@ class API {
     }
 
     async logout() {
-        await this.request('/auth/logout', { method: 'POST' });
-        localStorage.removeItem('token');
-        localStorage.removeItem('refreshToken');
-        localStorage.removeItem('user');
-        window.location.href = '/';
+        try {
+            await this.request('/auth/logout', { method: 'POST' });
+        } catch (_) {
+            // If the API call fails, still log out locally.
+        }
+        this.localLogout('/');
     }
 
     async getCurrentUser() {
