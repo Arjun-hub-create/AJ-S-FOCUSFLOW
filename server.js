@@ -26,9 +26,18 @@ app.use(express.static(path.join(__dirname, 'public')));
 // MongoDB Connection
 // Fail fast if DB is down instead of hanging requests.
 mongoose.set('bufferCommands', false);
-mongoose.connect(process.env.MONGODB_URI)
-.then(() => console.log('✅ MongoDB Connected'))
-.catch(err => console.error('❌ MongoDB Connection Error:', err));
+console.log('🔄 Attempting MongoDB connection to:', process.env.MONGODB_URI ? process.env.MONGODB_URI.split('@')[1] : 'NOT SET');
+mongoose.connect(process.env.MONGODB_URI, {
+  connectTimeoutMS: 10000,
+  serverSelectionTimeoutMS: 10000
+})
+.then(() => {
+  console.log('✅ MongoDB Connected Successfully');
+})
+.catch(err => {
+  console.error('❌ MongoDB Connection Error:', err.message);
+  console.error('Please verify: MONGODB_URI is set correctly and MongoDB cluster is accessible');
+});
 
 // Make io accessible in routes
 app.set('io', io);
@@ -40,6 +49,7 @@ app.use('/api/tasks', require('./routes/tasks'));
 app.use('/api/time', require('./routes/timeTracking'));
 app.use('/api/analytics', require('./routes/analytics'));
 app.use('/api/users', require('./routes/users'));
+app.use('/api/notifications', require('./routes/notifications'));
 
 // Socket.IO Real-time Events
 const onlineUsers = new Map();
@@ -111,6 +121,10 @@ app.get('/projects', (req, res) => {
 
 app.get('/analytics', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'analytics.html'));
+});
+
+app.get('/profile', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'profile.html'));
 });
 
 // Error handling middleware

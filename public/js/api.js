@@ -281,6 +281,42 @@ class API {
     async getUser(id) {
         return await this.request(`/users/${id}`);
     }
+
+    // Profile endpoints
+    async updateProfile(profileData) {
+        return await this.request('/users/profile', {
+            method: 'PUT',
+            body: JSON.stringify(profileData)
+        });
+    }
+
+    async changePassword(currentPassword, newPassword) {
+        return await this.request('/users/change-password', {
+            method: 'PUT',
+            body: JSON.stringify({ currentPassword, newPassword })
+        });
+    }
+
+    // Notification endpoints
+    async getNotifications(page = 1, limit = 20) {
+        return await this.request(`/notifications?page=${page}&limit=${limit}`);
+    }
+
+    async getUnreadCount() {
+        return await this.request('/notifications/unread-count');
+    }
+
+    async markNotificationRead(id) {
+        return await this.request(`/notifications/${id}/read`, {
+            method: 'PUT'
+        });
+    }
+
+    async markAllNotificationsRead() {
+        return await this.request('/notifications/read-all', {
+            method: 'PUT'
+        });
+    }
 }
 
 // Export as global

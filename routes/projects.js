@@ -6,9 +6,6 @@ const User = require('../models/User');
 const { protect } = require('../middleware/auth');
 const { validate } = require('../middleware/validator');
 
-// @route   POST /api/projects
-// @desc    Create new project
-// @access  Private
 router.post('/', protect, [
   body('name').trim().notEmpty().withMessage('Project name is required')
 ], validate, async (req, res) => {
