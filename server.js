@@ -23,21 +23,55 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// MongoDB Connection
-// Fail fast if DB is down instead of hanging requests.
+// MongoDB Connection — normalize URI and retry (Render cold starts / Atlas latency)
 mongoose.set('bufferCommands', false);
-console.log('🔄 Attempting MongoDB connection to:', process.env.MONGODB_URI ? process.env.MONGODB_URI.split('@')[1] : 'NOT SET');
-mongoose.connect(process.env.MONGODB_URI, {
-  connectTimeoutMS: 10000,
-  serverSelectionTimeoutMS: 10000
-})
-.then(() => {
-  console.log('✅ MongoDB Connected Successfully');
-})
-.catch(err => {
-  console.error('❌ MongoDB Connection Error:', err.message);
-  console.error('Please verify: MONGODB_URI is set correctly and MongoDB cluster is accessible');
+
+function normalizeMongoUri(uri) {
+  if (!uri) return uri;
+  let normalized = uri.trim();
+  if (/\.mongodb\.net\/(\?|$)/.test(normalized)) {
+    normalized = normalized.replace(/\.mongodb\.net\/(\?|$)/, '.mongodb.net/focusflow$1');
+  } else if (/\.mongodb\.net$/.test(normalized)) {
+    normalized = `${normalized}/focusflow`;
+  }
+  return normalized;
+}
+
+const mongoUri = normalizeMongoUri(process.env.MONGODB_URI);
+const mongoOptions = {
+  connectTimeoutMS: 30000,
+  serverSelectionTimeoutMS: 30000,
+  maxPoolSize: 10
+};
+
+async function connectMongo(retryAttempt = 1) {
+  if (!mongoUri) {
+    console.error('❌ MONGODB_URI is not set. Set it in Render Environment (same value as local .env).');
+    return;
+  }
+
+  const hostHint = mongoUri.includes('@') ? mongoUri.split('@')[1].split('/')[0] : 'configured cluster';
+  console.log(`🔄 MongoDB connection attempt ${retryAttempt} → ${hostHint}`);
+
+  try {
+    await mongoose.connect(mongoUri, mongoOptions);
+    console.log('✅ MongoDB Connected Successfully');
+  } catch (err) {
+    console.error(`❌ MongoDB Connection Error (attempt ${retryAttempt}):`, err.message);
+    console.error('Verify MONGODB_URI on Render, Atlas IP allowlist (0.0.0.0/0), and database user credentials.');
+    const delayMs = Math.min(5000 * retryAttempt, 30000);
+    setTimeout(() => connectMongo(retryAttempt + 1), delayMs);
+  }
+}
+
+mongoose.connection.on('disconnected', () => {
+  console.warn('⚠️ MongoDB disconnected — reconnecting...');
+  if (mongoose.connection.readyState === 0) {
+    connectMongo();
+  }
 });
+
+connectMongo();
 
 // Make io accessible in routes
 app.set('io', io);

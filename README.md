@@ -387,12 +387,6 @@ Built with ❤️ by Your Name
 
 ---
 
-## 📞 Support
 
-For support, email support@focusflow.com or open an issue on GitHub.
-
----
-
-**⭐ Star this repo if you find it helpful!**
 <!-- npm install
 npm start  --> 

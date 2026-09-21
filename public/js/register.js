@@ -3,19 +3,27 @@ document.addEventListener('DOMContentLoaded', () => {
     const registerForm = document.getElementById('registerForm');
     const messageDiv = document.getElementById('message');
 
-    // Check if already logged in
-    if (localStorage.getItem('token')) {
-        window.location.href = '/dashboard';
-        return;
+    if (!registerForm) return;
+
+    const existingToken = localStorage.getItem('token');
+    if (existingToken) {
+        api.getCurrentUser()
+            .then(() => { window.location.href = '/dashboard'; })
+            .catch(() => {
+                localStorage.removeItem('token');
+                localStorage.removeItem('refreshToken');
+                localStorage.removeItem('user');
+            });
     }
 
     registerForm.addEventListener('submit', async (e) => {
         e.preventDefault();
 
-        const name = document.getElementById('name').value;
-        const email = document.getElementById('email').value;
+        const name = document.getElementById('name').value.trim();
+        const email = document.getElementById('email').value.trim();
         const password = document.getElementById('password').value;
         const confirmPassword = document.getElementById('confirmPassword').value;
+        const submitBtn = registerForm.querySelector('button[type="submit"]');
 
         // Validate passwords match
         if (password !== confirmPassword) {
@@ -31,6 +39,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         try {
+            if (submitBtn) submitBtn.disabled = true;
             messageDiv.textContent = 'Creating account...';
             messageDiv.className = 'message';
             messageDiv.style.display = 'block';
@@ -52,6 +61,8 @@ document.addEventListener('DOMContentLoaded', () => {
             messageDiv.textContent = error.message || 'Registration failed. Please try again.';
             messageDiv.className = 'message error';
             messageDiv.style.display = 'block';
+        } finally {
+            if (submitBtn) submitBtn.disabled = false;
         }
     });
 });

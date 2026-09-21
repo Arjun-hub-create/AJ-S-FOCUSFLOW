@@ -1,8 +1,12 @@
-// Particles.js Configuration
-particlesJS('particles-js', {
+// Particles.js Configuration (deferred + lighter for faster first paint)
+function initParticlesBackground() {
+    const container = document.getElementById('particles-js');
+    if (!container || typeof particlesJS !== 'function') return;
+
+    particlesJS('particles-js', {
     "particles": {
         "number": {
-            "value": 100,
+            "value": 45,
             "density": {
                 "enable": true,
                 "value_area": 800
@@ -83,5 +87,20 @@ particlesJS('particles-js', {
             }
         }
     },
-    "retina_detect": true
-});
+    "retina_detect": false
+    });
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+        if ('requestIdleCallback' in window) {
+            requestIdleCallback(initParticlesBackground, { timeout: 1500 });
+        } else {
+            setTimeout(initParticlesBackground, 0);
+        }
+    });
+} else if ('requestIdleCallback' in window) {
+    requestIdleCallback(initParticlesBackground, { timeout: 1500 });
+} else {
+    setTimeout(initParticlesBackground, 0);
+}

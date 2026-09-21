@@ -42,17 +42,20 @@ let allProjects = [];
 
 async function loadDashboardData() {
     try {
-        const analyticsData = await api.getAnalyticsOverview();
+        const [analyticsData, projectsData, tasksData] = await Promise.all([
+            api.getAnalyticsOverview(),
+            api.getProjects(),
+            api.getTasks()
+        ]);
+
         if (analyticsData.success) updateStatsCards(analyticsData.analytics);
 
-        const projectsData = await api.getProjects();
         if (projectsData.success) {
             allProjects = projectsData.projects;
             displayProjects(projectsData.projects.slice(0, 4));
             populateProjectSelect(projectsData.projects);
         }
 
-        const tasksData = await api.getTasks();
         if (tasksData.success) {
             allTasks = tasksData.tasks;
             displayTasks(tasksData.tasks.slice(0, 10));

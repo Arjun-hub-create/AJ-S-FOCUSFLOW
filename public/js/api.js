@@ -29,24 +29,42 @@ class API {
         return headers;
     }
 
+    getErrorMessage(data, fallback = 'Request failed') {
+        if (data?.message) return data.message;
+        if (Array.isArray(data?.errors) && data.errors.length > 0) {
+            return data.errors.map((e) => e.message).join('. ');
+        }
+        return fallback;
+    }
+
+    isPublicAuthEndpoint(endpoint) {
+        return endpoint === '/auth/login' || endpoint === '/auth/register';
+    }
+
     // Handle API errors
-    async handleResponse(response) {
-        if (response.status === 401) {
-            // Token expired, try to refresh
+    async handleResponse(response, { endpoint, retry } = {}) {
+        const isPublicAuth = endpoint && this.isPublicAuthEndpoint(endpoint);
+
+        if (response.status === 401 && !isPublicAuth && this.token) {
             const refreshed = await this.refreshAccessToken();
-            if (!refreshed) {
-                // Avoid calling /auth/logout here (can loop on 401). Just clear local state.
-                this.localLogout('/');
-                throw new Error('Session expired. Please sign in again.');
+            if (refreshed && typeof retry === 'function') {
+                return retry();
             }
+            this.localLogout('/');
+            throw new Error('Session expired. Please sign in again.');
         }
 
-        const data = await response.json();
-        
-        if (!response.ok) {
-            throw new Error(data.message || 'API request failed');
+        let data;
+        try {
+            data = await response.json();
+        } catch {
+            throw new Error('Invalid server response. Please try again.');
         }
-        
+
+        if (!response.ok) {
+            throw new Error(this.getErrorMessage(data, 'Request failed'));
+        }
+
         return data;
     }
 
@@ -74,17 +92,30 @@ class API {
 
     // Generic request method
     async request(endpoint, options = {}) {
-        try {
+        let retriedAfterRefresh = false;
+
+        const execute = async () => {
             const response = await fetch(`${API_BASE_URL}${endpoint}`, {
                 ...options,
                 headers: this.getHeaders()
             });
 
-            return await this.handleResponse(response);
+            return this.handleResponse(response, {
+                endpoint,
+                retry: retriedAfterRefresh
+                    ? null
+                    : async () => {
+                        retriedAfterRefresh = true;
+                        return execute();
+                    }
+            });
+        };
+
+        try {
+            return await execute();
         } catch (error) {
             console.error('API Error:', error);
-            // Better error message for connection issues
-            if (error.message.includes('fetch')) {
+            if (error.name === 'TypeError' && error.message.includes('fetch')) {
                 throw new Error('Cannot connect to server. Please make sure the server is running.');
             }
             throw error;

@@ -26,15 +26,16 @@ function loadUserInfo() {
 
 async function loadAnalytics() {
     try {
-        const data = await api.getAnalyticsOverview();
-        
+        const [data, timeData] = await Promise.all([
+            api.getAnalyticsOverview(),
+            api.getTimeEntries()
+        ]);
+
         if (data.success) {
             updateAnalyticsStats(data.analytics);
             createCharts(data.analytics);
         }
 
-        // Load time entries
-        const timeData = await api.getTimeEntries();
         if (timeData.success) {
             displayTimeEntries(timeData.entries);
         }

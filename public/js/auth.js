@@ -8,10 +8,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const backToLogin = document.getElementById('backToLogin');
     const loginBox = loginForm?.parentElement;
 
-    // Check if already logged in
-    if (localStorage.getItem('token')) {
-        window.location.href = '/dashboard';
-        return;
+    // Skip redirect when a stale token is present (invalid session should not block login)
+    const existingToken = localStorage.getItem('token');
+    if (existingToken) {
+        api.getCurrentUser()
+            .then(() => { window.location.href = '/dashboard'; })
+            .catch(() => {
+                localStorage.removeItem('token');
+                localStorage.removeItem('refreshToken');
+                localStorage.removeItem('user');
+            });
     }
 
     // Toggle to forgot password form
@@ -70,10 +76,12 @@ document.addEventListener('DOMContentLoaded', () => {
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
 
-            const email = document.getElementById('email').value;
+            const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value;
+            const submitBtn = loginForm.querySelector('button[type="submit"]');
 
             try {
+                if (submitBtn) submitBtn.disabled = true;
                 messageDiv.textContent = 'Signing in...';
                 messageDiv.className = 'message';
                 messageDiv.style.display = 'block';
@@ -95,6 +103,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 messageDiv.textContent = error.message || 'Login failed. Please try again.';
                 messageDiv.className = 'message error';
                 messageDiv.style.display = 'block';
+            } finally {
+                if (submitBtn) submitBtn.disabled = false;
             }
         });
     }

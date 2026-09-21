@@ -9,6 +9,7 @@ services:
         value: production
       - key: PORT
         value: 10000
+      # Paste your full Atlas connection string from .env (required for login/register)
       - key: MONGODB_URI
         sync: false
       - key: JWT_SECRET

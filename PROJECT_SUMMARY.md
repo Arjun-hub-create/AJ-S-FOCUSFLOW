@@ -260,6 +260,3 @@ Your FocusFlow application is **production-ready** with:
 5. Open http://localhost:5000
 6. Register an account and start using FocusFlow!
 
----
-
-**Happy coding! 🚀**
