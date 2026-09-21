@@ -1,17 +1,18 @@
 const express = require('express');
 const router = express.Router();
 const { body } = require('express-validator');
-const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const { validate } = require('../middleware/validator');
 const { protect } = require('../middleware/auth');
+const { waitForDatabase } = require('../config/database');
 
-function ensureDbConnected(req, res) {
-  if (mongoose.connection.readyState !== 1) {
+async function ensureDbConnected(req, res) {
+  const connected = await waitForDatabase(25000);
+  if (!connected) {
     res.status(503).json({
       success: false,
-      message: 'Database not connected. Please check MONGODB_URI on the server.'
+      message: 'Database not connected. Confirm MONGODB_URI on Render matches your Atlas connection string (no extra quotes).'
     });
     return false;
   }
@@ -41,7 +42,7 @@ router.post('/register', [
   body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters')
 ], validate, async (req, res) => {
   try {
-    if (!ensureDbConnected(req, res)) return;
+    if (!(await ensureDbConnected(req, res))) return;
     const { name, email, password } = req.body;
 
     // Check if user exists
@@ -98,7 +99,7 @@ router.post('/login', [
   body('password').notEmpty().withMessage('Password is required')
 ], validate, async (req, res) => {
   try {
-    if (!ensureDbConnected(req, res)) return;
+    if (!(await ensureDbConnected(req, res))) return;
     const { email, password } = req.body;
 
     // Check if user exists

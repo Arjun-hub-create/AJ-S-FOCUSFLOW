@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body class="dashboard-body">
-    <div id="particles-js"></div>
+    <div id="particles-js" class="particles-disabled"></div>
 
     <!-- Mobile Menu Toggle -->
     <button class="mobile-menu-toggle" id="mobileMenuToggle" style="display: none;">
@@ -365,13 +365,11 @@
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
-    <script src="https://cdn.socket.io/4.6.0/socket.io.min.js"></script>
-    <script src="js/particles-config.js"></script>
     <script src="js/api.js"></script>
-    <script src="js/socket.js"></script>
-    <script src="js/timer.js"></script>
-    <script src="js/shortcuts.js"></script>
     <script src="js/dashboard.js"></script>
+    <script src="js/shortcuts.js" defer></script>
+    <script src="js/timer.js" defer></script>
+    <script src="https://cdn.socket.io/4.6.0/socket.io.min.js" defer></script>
+    <script src="js/socket.js" defer></script>
 </body>
 </html>

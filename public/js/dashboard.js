@@ -3,19 +3,30 @@ document.addEventListener('DOMContentLoaded', async () => {
     console.log('Dashboard loading...');
     if (!localStorage.getItem('token')) { window.location.href = '/'; return; }
     loadUserInfo();
-    await loadDashboardData();
     setupEventListeners();
-    setupRealtimeListeners();
-    initializeTimer();
     initializeMobileMenu();
     initializeModals();
-    initializeSearch();
-    initializeNotifications();
-    initializeStreak();
-    initializeLabelSelector();
-    initializePomodoro();
+    await loadDashboardData();
+    setupRealtimeListeners();
+    deferNonCriticalDashboardFeatures();
     console.log('Dashboard loaded successfully');
 });
+
+function deferNonCriticalDashboardFeatures() {
+    const run = () => {
+        initializeTimer();
+        initializeSearch();
+        initializeNotifications();
+        initializeStreak();
+        initializeLabelSelector();
+        initializePomodoro();
+    };
+    if ('requestIdleCallback' in window) {
+        requestIdleCallback(run, { timeout: 2000 });
+    } else {
+        setTimeout(run, 0);
+    }
+}
 
 // ===== TOAST =====
 function showMessage(message, type = 'info') {
