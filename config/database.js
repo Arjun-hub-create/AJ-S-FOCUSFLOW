@@ -18,7 +18,25 @@ function cleanMongoUri(raw) {
   return uri || null;
 }
 
-const mongoUri = cleanMongoUri(process.env.MONGODB_URI);
+function buildMongoUriFromParts() {
+  const user = process.env.MONGODB_USER?.trim();
+  const password = process.env.MONGODB_PASSWORD;
+  const host = process.env.MONGODB_HOST?.trim();
+
+  if (!user || !password || !host) {
+    return null;
+  }
+
+  const encodedUser = encodeURIComponent(user);
+  const encodedPassword = encodeURIComponent(password);
+  return `mongodb+srv://${encodedUser}:${encodedPassword}@${host}/?retryWrites=true&w=majority`;
+}
+
+function resolveMongoUri() {
+  return buildMongoUriFromParts() || cleanMongoUri(process.env.MONGODB_URI);
+}
+
+const mongoUri = resolveMongoUri();
 
 const mongoOptions = {
   dbName: 'focusflow',
@@ -59,9 +77,14 @@ async function connectMongo() {
       console.log('✅ MongoDB Connected Successfully');
       return true;
     })
-    .catch((err) => {
+    .catch(async (err) => {
       lastConnectError = err;
       console.error('❌ MongoDB Connection Error:', err.message);
+      try {
+        await mongoose.disconnect();
+      } catch (_) {
+        /* ignore */
+      }
       return false;
     })
     .finally(() => {
@@ -107,8 +130,31 @@ function waitForDatabase(timeoutMs = 20000) {
 
     connectMongo().then((ok) => {
       if (ok) finish(true);
+      else finish(false);
     });
   });
+}
+
+function getConnectionHelpMessage() {
+  if (!mongoUri) {
+    return 'MONGODB_URI is not set on Render. Add your Atlas connection string under Environment variables.';
+  }
+
+  const err = lastConnectError?.message || '';
+
+  if (/bad auth|authentication failed/i.test(err)) {
+    return 'MongoDB username or password in Render is wrong. In Atlas: Database Access → your user → Edit → Reset password → Connect → Drivers → copy the FULL new connection string into Render MONGODB_URI (or set MONGODB_USER, MONGODB_PASSWORD, MONGODB_HOST separately). Then redeploy.';
+  }
+
+  if (/ENOTFOUND|querySrv/i.test(err)) {
+    return `MongoDB cluster "${getMongoHostHint()}" was not found. In Atlas, open your active cluster → Connect → copy a fresh connection string into Render.`;
+  }
+
+  if (err) {
+    return `Database connection failed: ${err}`;
+  }
+
+  return 'Database is not ready yet. Wait a few seconds after the server wakes up, then try again.';
 }
 
 function getDatabaseStatus() {
@@ -137,5 +183,6 @@ module.exports = {
   initDatabase,
   waitForDatabase,
   getDatabaseStatus,
+  getConnectionHelpMessage,
   connectMongo
 };

@@ -28,6 +28,8 @@ initDatabase();
 // Make io accessible in routes
 app.set('io', io);
 
+app.get('/favicon.ico', (req, res) => res.status(204).end());
+
 app.get('/api/health', (req, res) => {
   const db = getDatabaseStatus();
   res.status(db.readyState === 1 ? 200 : 503).json({

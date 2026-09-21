@@ -5,14 +5,14 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const { validate } = require('../middleware/validator');
 const { protect } = require('../middleware/auth');
-const { waitForDatabase } = require('../config/database');
+const { waitForDatabase, getConnectionHelpMessage } = require('../config/database');
 
 async function ensureDbConnected(req, res) {
   const connected = await waitForDatabase(25000);
   if (!connected) {
     res.status(503).json({
       success: false,
-      message: 'Database not connected. Confirm MONGODB_URI on Render matches your Atlas connection string (no extra quotes).'
+      message: getConnectionHelpMessage()
     });
     return false;
   }

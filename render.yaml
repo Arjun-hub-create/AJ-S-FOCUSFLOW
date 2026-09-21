@@ -9,8 +9,15 @@ services:
         value: production
       - key: PORT
         value: 10000
-      # Paste your full Atlas connection string from .env (required for login/register)
+      # Option A: full Atlas URI (must match Atlas Connect → Drivers exactly)
       - key: MONGODB_URI
+        sync: false
+      # Option B: split vars (password auto URL-encoded; overrides MONGODB_URI when all three are set)
+      - key: MONGODB_USER
+        sync: false
+      - key: MONGODB_PASSWORD
+        sync: false
+      - key: MONGODB_HOST
         sync: false
       - key: JWT_SECRET
         generateValue: true
