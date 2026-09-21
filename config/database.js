@@ -20,7 +20,7 @@ function cleanMongoUri(raw) {
 
 function buildMongoUriFromParts() {
   const user = process.env.MONGODB_USER?.trim();
-  const password = process.env.MONGODB_PASSWORD;
+  const password = process.env.MONGODB_PASSWORD?.trim();
   const host = process.env.MONGODB_HOST?.trim();
 
   if (!user || !password || !host) {
@@ -33,10 +33,20 @@ function buildMongoUriFromParts() {
 }
 
 function resolveMongoUri() {
-  return buildMongoUriFromParts() || cleanMongoUri(process.env.MONGODB_URI);
+  const fromUri = cleanMongoUri(process.env.MONGODB_URI);
+  const fromParts = buildMongoUriFromParts();
+
+  // Prefer full MONGODB_URI when set (Render default). Split vars are fallback only.
+  if (fromUri) {
+    return { uri: fromUri, source: 'mongodb_uri' };
+  }
+  if (fromParts) {
+    return { uri: fromParts, source: 'env_parts' };
+  }
+  return { uri: null, source: 'none' };
 }
 
-const mongoUri = resolveMongoUri();
+const { uri: mongoUri, source: mongoUriSource } = resolveMongoUri();
 
 const mongoOptions = {
   dbName: 'focusflow',
@@ -143,7 +153,10 @@ function getConnectionHelpMessage() {
   const err = lastConnectError?.message || '';
 
   if (/bad auth|authentication failed/i.test(err)) {
-    return 'MongoDB username or password in Render is wrong. In Atlas: Database Access → your user → Edit → Reset password → Connect → Drivers → copy the FULL new connection string into Render MONGODB_URI (or set MONGODB_USER, MONGODB_PASSWORD, MONGODB_HOST separately). Then redeploy.';
+    const via = mongoUriSource === 'env_parts'
+      ? 'Render is using MONGODB_USER / MONGODB_PASSWORD / MONGODB_HOST (not MONGODB_URI).'
+      : 'Render is using MONGODB_URI.';
+    return `${via} Atlas rejected the database password. Fix: Atlas → Database Access → your user → Edit → Reset password → Connect → Drivers → copy the NEW full connection string into Render MONGODB_URI only. Remove MONGODB_USER, MONGODB_PASSWORD, and MONGODB_HOST from Render if you are not using them. Save and redeploy.`;
   }
 
   if (/ENOTFOUND|querySrv/i.test(err)) {
@@ -161,6 +174,7 @@ function getDatabaseStatus() {
   const states = ['disconnected', 'connected', 'connecting', 'disconnecting'];
   return {
     configured: Boolean(mongoUri),
+    credentialSource: mongoUriSource,
     readyState: mongoose.connection.readyState,
     state: states[mongoose.connection.readyState] || 'unknown',
     host: getMongoHostHint(),
