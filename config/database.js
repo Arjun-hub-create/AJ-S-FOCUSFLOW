@@ -3,6 +3,55 @@ const mongoose = require('mongoose');
 let lastConnectError = null;
 let connectPromise = null;
 
+function inspectMongoUri(uri) {
+  const info = {
+    username: null,
+    passwordPlaceholder: false,
+    passwordLength: 0
+  };
+  if (!uri) return info;
+
+  const match = uri.match(/^mongodb(?:\+srv)?:\/\/([^/@]+)@/i);
+  if (!match) return info;
+
+  const userinfo = match[1];
+  const colon = userinfo.indexOf(':');
+  if (colon === -1) {
+    info.username = safeDecode(userinfo);
+    return info;
+  }
+
+  info.username = safeDecode(userinfo.slice(0, colon));
+  const password = userinfo.slice(colon + 1);
+  const decoded = safeDecode(password);
+  info.passwordLength = decoded.length;
+  info.passwordPlaceholder = /<[^>]*password[^>]*>|YOUR_DB_PASSWORD|db_password/i.test(decoded);
+  return info;
+}
+
+function safeDecode(value) {
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    return value;
+  }
+}
+
+function encodeCredentialsInUri(uri) {
+  const match = uri.match(/^(mongodb(?:\+srv)?:\/\/)([^/@]+)@(.+)$/i);
+  if (!match) return uri;
+
+  const [, protocol, userinfo, rest] = match;
+  const colon = userinfo.indexOf(':');
+  if (colon === -1) {
+    return `${protocol}${encodeURIComponent(safeDecode(userinfo))}@${rest}`;
+  }
+
+  const user = encodeURIComponent(safeDecode(userinfo.slice(0, colon)));
+  const password = encodeURIComponent(safeDecode(userinfo.slice(colon + 1)));
+  return `${protocol}${user}:${password}@${rest}`;
+}
+
 function cleanMongoUri(raw) {
   if (!raw) return null;
   let uri = String(raw).trim();
@@ -15,7 +64,8 @@ function cleanMongoUri(raw) {
   ) {
     uri = uri.slice(1, -1).trim();
   }
-  return uri || null;
+  if (!uri) return null;
+  return encodeCredentialsInUri(uri);
 }
 
 function buildMongoUriFromParts() {
@@ -47,13 +97,15 @@ function resolveMongoUri() {
 }
 
 const { uri: mongoUri, source: mongoUriSource } = resolveMongoUri();
+const mongoUriInfo = inspectMongoUri(mongoUri);
 
 const mongoOptions = {
   dbName: 'focusflow',
+  authSource: 'admin',
+  retryWrites: true,
   connectTimeoutMS: 30000,
   serverSelectionTimeoutMS: 30000,
   maxPoolSize: 10,
-  // Render/Heroku sometimes fail mongodb+srv over IPv6
   family: 4
 };
 
@@ -67,6 +119,12 @@ async function connectMongo() {
   if (!mongoUri) {
     lastConnectError = new Error('MONGODB_URI is not set');
     console.error('❌ MONGODB_URI is not set on this server.');
+    return false;
+  }
+
+  if (mongoUriInfo.passwordPlaceholder) {
+    lastConnectError = new Error('MONGODB_URI still contains the placeholder <db_password>. Replace it with your real Atlas password on Render.');
+    console.error('❌', lastConnectError.message);
     return false;
   }
 
@@ -152,11 +210,15 @@ function getConnectionHelpMessage() {
 
   const err = lastConnectError?.message || '';
 
+  if (mongoUriInfo.passwordPlaceholder) {
+    return 'Render MONGODB_URI still has the placeholder <db_password>. Paste the real Atlas password in place of <db_password>, save, and redeploy.';
+  }
+
   if (/bad auth|authentication failed/i.test(err)) {
     const via = mongoUriSource === 'env_parts'
       ? 'Render is using MONGODB_USER / MONGODB_PASSWORD / MONGODB_HOST (not MONGODB_URI).'
       : 'Render is using MONGODB_URI.';
-    return `${via} Atlas rejected the database password. Fix: Atlas → Database Access → your user → Edit → Reset password → Connect → Drivers → copy the NEW full connection string into Render MONGODB_URI only. Remove MONGODB_USER, MONGODB_PASSWORD, and MONGODB_HOST from Render if you are not using them. Save and redeploy.`;
+    return `${via} Atlas rejected user "${mongoUriInfo.username || 'unknown'}". The cluster host is correct (${getMongoHostHint()}), but the password in Render does not match Database Access. Reset the password in Atlas, paste the FULL new mongodb+srv:// string into Render MONGODB_URI with the real password (not <db_password>), delete MONGODB_USER/MONGODB_PASSWORD/MONGODB_HOST, Save, then Manual Deploy.`;
   }
 
   if (/ENOTFOUND|querySrv/i.test(err)) {
@@ -178,6 +240,9 @@ function getDatabaseStatus() {
     readyState: mongoose.connection.readyState,
     state: states[mongoose.connection.readyState] || 'unknown',
     host: getMongoHostHint(),
+    username: mongoUriInfo.username,
+    passwordPlaceholder: mongoUriInfo.passwordPlaceholder,
+    passwordLength: mongoUriInfo.passwordLength,
     lastError: lastConnectError ? lastConnectError.message : null
   };
 }
