@@ -14,7 +14,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 function deferNonCriticalDashboardFeatures() {
     const run = () => {
-        initializeTimer();
         initializeSearch();
         initializeNotifications();
         initializeStreak();
@@ -187,14 +186,6 @@ function setupRealtimeListeners() {
     ['task-update', 'task-create', 'task-delete', 'timer-stopped'].forEach(evt => {
         window.addEventListener(evt, () => loadDashboardData());
     });
-}
-
-function initializeTimer() {
-    if (typeof Timer !== 'undefined') {
-        const timer = new Timer(); timer.checkActiveTimer();
-        const timerToggle = document.getElementById('timerToggle');
-        if (timerToggle) timerToggle.addEventListener('click', () => timer.toggle());
-    }
 }
 
 function initializeMobileMenu() {

@@ -81,17 +81,6 @@
                     </button>
                 </div>
 
-                <!-- Timer Widget -->
-                <div class="timer-widget" id="timerWidget">
-                    <div class="timer-display">
-                        <i class="fas fa-clock"></i>
-                        <span id="timerDisplay">00:00:00</span>
-                    </div>
-                    <button class="timer-btn" id="timerToggle">
-                        <i class="fas fa-play"></i>
-                    </button>
-                </div>
-
                 <!-- Notifications Bell -->
                 <div class="notification-wrapper" id="notificationWrapper">
                     <button class="notification-bell" id="notificationBell">
@@ -305,19 +294,6 @@
         </div>
     </div>
 
-    <!-- Timer Task Selection Modal -->
-    <div id="timerModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>Select Task to Track</h3>
-                <button class="modal-close">&times;</button>
-            </div>
-            <div id="timerTasksList" class="timer-tasks-list">
-                <!-- Tasks will be loaded here -->
-            </div>
-        </div>
-    </div>
-
     <!-- Pomodoro Focus Overlay -->
     <div id="pomodoroOverlay" class="pomodoro-overlay" style="display: none;">
         <div class="pomodoro-content">
@@ -368,7 +344,6 @@
     <script src="js/api.js"></script>
     <script src="js/dashboard.js"></script>
     <script src="js/shortcuts.js" defer></script>
-    <script src="js/timer.js" defer></script>
     <script src="https://cdn.socket.io/4.6.0/socket.io.min.js" defer></script>
     <script src="js/socket.js" defer></script>
 </body>
