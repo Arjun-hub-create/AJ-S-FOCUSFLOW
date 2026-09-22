@@ -12,7 +12,7 @@ services:
       # Option A: full Atlas URI (must match Atlas Connect → Drivers exactly)
       - key: MONGODB_URI
         sync: false
-      # Option B: split vars (password auto URL-encoded; overrides MONGODB_URI when all three are set)
+      # Option B: split vars only if MONGODB_URI is not set
       - key: MONGODB_USER
         sync: false
       - key: MONGODB_PASSWORD
